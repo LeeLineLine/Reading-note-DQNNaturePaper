@@ -9,6 +9,10 @@
   利用深度增强学习玩Atari游戏，使用相同的网络结构、超参数值，和学习过程，高得分地通过了49种游戏，实现了Agent的智能化。将4组由图像、动作、得分、下一帧图像组成的序列作为输入，输出对应于游戏的每个动作。采用深度卷积神经网络（DCNN）来学习环境特征，采用experience reply完成了增强学习和DCNN的结合，实现决策的过程。增强学习使用DCNN拟合action-value函数，由Bellman equation采用
 \\(Q\left( {s,a;{\theta _i}} \right)\\)来逼近最大期望收益，使用单独的网络$\hat Q$̂更新目标，Q网络用来估计当前的,值$\hat Q$ ̂网络用来估计下一个状态的值，采用随机梯度下降法优化损失函数，后采用ε-greedy策略选定动作。
 
+
+----------
+
+
 ## 具体内容
 ### 一、背景
   
@@ -29,11 +33,12 @@ Agent通过observation、action和reward的序列与environment（此处为Atari
 使用深度卷积神经网络来拟合最优的action-value function(动作估值函数)\\(Q^{\ast }\left( s,a\right)\\)，该最优化可以通过observation和action后，执行policy \\(π=P(a|s)\\)来实现，以实现每个时间步t的reward r_t与其衰减系数γ乘积的和的最大化，即：
 $\;{Q^*}\left( {s,a} \right) = \mathop {\max }\limits_\pi  E\left[ {{r_t} + \gamma {r_{t + 1}} + {\gamma ^2}{r_{t + 2}} +  \cdots |{s_t} = s,{a_t} = a,\pi } \right]$
 > 1）实施难点：增强学习使用神经网络拟合action-value function(Q函数)时很容易不稳定甚至发散。原因：observation序列的相关性；对Q的小的更新会显著影响policy，从而影响数据分布；Q函数和target值% $r + \gamma \mathop {\max }\limits_{a'} Q\left( {s',a'} \right)$的相关性。
->2）解决方法：
+
+ > 2）解决方法：
    - experience replay,用以打乱数据序列之间的相关性，平滑数据分布的变化。
    - iterative update，仅以target值周期性地更新Q值，减小Q值和target值之间的相关性。
 
- >3）优点：无需在每次迭代中从头训练网络，更为高效，可成功应用于大型神经网络的训练。
+ > 3）优点：无需在每次迭代中从头训练网络，更为高效，可成功应用于大型神经网络的训练。
  
  
  使用深度卷积神经网络来近似值函数\\(Q\left( {s,a;{\theta _i}} \right)\\)，其中${\theta _i}$是第i步的Q网络的权重。为实现experience replay，在每一个时间步t，存储agent的experience ${e_t} = \left( {{s_t},{a_t},{r_t},{s_{t + 1}}} \right)$到一个数据集${D_t} = \left\{ {{e_1}, \cdots ,{e_t}} \right\}$中。进行学习时，从数据集中随机抽取样本进行Q-learning更新。在第i步迭代中，Q-learning使用如下的损失函数进行更新：
@@ -142,16 +147,18 @@ ${\nabla _{{\theta _i}}}L\left( {{\theta _i}} \right) = {E_{s,a,r,{s^'}}}\left[ 
 
 - deep Q-learning with experience replay算法
  > 初始化replay memory D，容量为N；
-使用权重$\theta$随机初始化action-value函数Q；
-使用权重${\theta _i}^ -  = \theta $初始化target函数$\hat Q$；
-在每一个episode
- >> 初始化状态序列${s_1} = {x_1}$，并进行预处理${\phi _1} = \phi \left( {{s_1}} \right)$；
-  在每一个时间步t
->>> 根据ε-greedy策略来选择action ${a_t}$
-模拟器执行action ${a_t}$，获取reward ${r_t}$和图像${x_{t + 1}}$
-更新状态序列${s_{t + 1}} = {s_t},{a_t},{x_{t + 1}}$，进行预处理${\phi _{t + 1}} = \phi \left( {{s_{t + 1}}} \right)$
-将序列$\left( {{\phi _t},{a_t},{r_t},{\phi _{t + 1}}} \right)$存储到D中
-从D中随机采样minibatch，求解近似目标值${y_j}$
-对loss函数执行梯度下降法，更新网络参数
-每C步更新$\hat Q = Q$
+ > 使用权重$\theta$随机初始化action-value函数Q；
+ > 使用权重${\theta _i}^ -  = \theta $初始化target函数$\hat Q$；
+ > 在每一个episode
+ 
+  >> 初始化状态序列${s_1} = {x_1}$，并进行预处理${\phi _1} = \phi \left( {{s_1}} \right)$；
+  >> 在每一个时间步t
+ 
+ >>> 根据ε-greedy策略来选择action ${a_t}$
+ >>> 模拟器执行action ${a_t}$，获取reward ${r_t}$和图像${x_{t + 1}}$
+ >>> 更新状态序列${s_{t + 1}} = {s_t},{a_t},{x_{t + 1}}$，进行预处理${\phi _{t + 1}} = \phi \left( {{s_{t + 1}}} \right)$
+ >>> 将序列$\left( {{\phi _t},{a_t},{r_t},{\phi _{t + 1}}} \right)$存储到D中
+ >>> 从D中随机采样minibatch，求解近似目标值${y_j}$
+ >>> 对loss函数执行梯度下降法，更新网络参数
+ >>> 每C步更新$\hat Q = Q$
 
